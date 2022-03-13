@@ -52,7 +52,7 @@ func New(inputChannel <-chan *stream.Record) (serve.Datastore, error) {
 		}
 	}
 
-	return store, nil
+	return &store, nil
 }
 
 func isUserRegistered(ds *Datastore, customerId string) (bool, error) {
@@ -183,7 +183,7 @@ func fixLinks(ds *Datastore) error {
 	return nil
 }
 
-func (ds Datastore) Get(id int) (*serve.Customer, error) {
+func (ds *Datastore) Get(id int) (*serve.Customer, error) {
 	pos, exists := ds.customerLinks[id]
 	if !exists {
 		return nil, errors.New("customer not found")
@@ -193,19 +193,19 @@ func (ds Datastore) Get(id int) (*serve.Customer, error) {
 	return customer, nil
 }
 
-func (ds Datastore) List(page, count int) ([]*serve.Customer, error) {
+func (ds *Datastore) List(page, count int) ([]*serve.Customer, error) {
 	return ds.customers, nil
 }
 
-func (ds Datastore) Create(id int, attributes map[string]string) (*serve.Customer, error) {
+func (ds *Datastore) Create(id int, attributes map[string]string) (*serve.Customer, error) {
 	if _, exists := ds.customerLinks[id]; exists {
 		return nil, errors.New("customer already exists")
 	}
 
-	return registerCustomer(&ds, id, attributes)
+	return registerCustomer(ds, id, attributes)
 }
 
-func (ds Datastore) Update(id int, attributes map[string]string) (*serve.Customer, error) {
+func (ds *Datastore) Update(id int, attributes map[string]string) (*serve.Customer, error) {
 	pos, exists := ds.customerLinks[id]
 	if !exists {
 		return nil, errors.New("customer does not exist")
@@ -221,7 +221,7 @@ func (ds Datastore) Update(id int, attributes map[string]string) (*serve.Custome
 	return customer, nil
 }
 
-func (ds Datastore) Delete(id int) error {
+func (ds *Datastore) Delete(id int) error {
 	pos, exists := ds.customerLinks[id]
 	if !exists {
 		return errors.New("customer not found")
@@ -235,9 +235,9 @@ func (ds Datastore) Delete(id int) error {
 	ds.customers = ds.customers[:len(ds.customers)-1]
 
 	// recalculate links
-	return fixLinks(&ds)
+	return fixLinks(ds)
 }
 
-func (ds Datastore) TotalCustomers() (int, error) {
+func (ds *Datastore) TotalCustomers() (int, error) {
 	return len(ds.customers), nil
 }
