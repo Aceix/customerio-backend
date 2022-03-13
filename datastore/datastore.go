@@ -20,6 +20,7 @@ type Datastore struct {
 	processedEventsMap map[string]bool
 }
 
+// New creates an in-memory instance of the datastore from an input channel of records
 func New(inputChannel <-chan *stream.Record) (serve.Datastore, error) {
 	store := Datastore{
 		customers:          make([]*serve.Customer, 0),
@@ -183,6 +184,7 @@ func fixLinks(ds *Datastore) error {
 	return nil
 }
 
+// Get retrieves a customer's data by ID
 func (ds *Datastore) Get(id int) (*serve.Customer, error) {
 	pos, exists := ds.customerLinks[id]
 	if !exists {
@@ -193,10 +195,12 @@ func (ds *Datastore) Get(id int) (*serve.Customer, error) {
 	return customer, nil
 }
 
+// List retrieves all customers in the datastore
 func (ds *Datastore) List(page, count int) ([]*serve.Customer, error) {
 	return ds.customers, nil
 }
 
+// Create adds a new customer to the datastore
 func (ds *Datastore) Create(id int, attributes map[string]string) (*serve.Customer, error) {
 	if _, exists := ds.customerLinks[id]; exists {
 		return nil, errors.New("customer already exists")
@@ -205,6 +209,7 @@ func (ds *Datastore) Create(id int, attributes map[string]string) (*serve.Custom
 	return registerCustomer(ds, id, attributes)
 }
 
+// Update updates a customer's attribute data
 func (ds *Datastore) Update(id int, attributes map[string]string) (*serve.Customer, error) {
 	pos, exists := ds.customerLinks[id]
 	if !exists {
@@ -221,6 +226,7 @@ func (ds *Datastore) Update(id int, attributes map[string]string) (*serve.Custom
 	return customer, nil
 }
 
+// Delete removes a customer from the datastore
 func (ds *Datastore) Delete(id int) error {
 	pos, exists := ds.customerLinks[id]
 	if !exists {
@@ -238,6 +244,7 @@ func (ds *Datastore) Delete(id int) error {
 	return fixLinks(ds)
 }
 
+// TotalCustomers returns the total number of customers in the datastore
 func (ds *Datastore) TotalCustomers() (int, error) {
 	return len(ds.customers), nil
 }
